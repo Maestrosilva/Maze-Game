@@ -1,0 +1,30 @@
+username: Admin1
+password: 12345
+levelReached: 5
+level1Id: 0
+level2Id: 0
+level3Id: 0
+level4Id: 0
+level5Id: 0
+totalCoins: 123
+---------------------
+username: Admin2
+password: 12345
+levelReached: 5
+level1Id: 0
+level2Id: 0
+level3Id: 0
+level4Id: 0
+level5Id: 0
+totalCoins: 125
+---------------------
+username: Admin3
+password: 12345
+levelReached: 5
+level1Id: 0
+level2Id: 0
+level3Id: 0
+level4Id: 0
+level5Id: 0
+totalCoins: 120
+---------------------

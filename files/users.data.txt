@@ -1,30 +1,108 @@
-username: Admin1
-password: 12345
-levelReached: 5
-level1Id: 0
-level2Id: 0
-level3Id: 0
-level4Id: 0
-level5Id: 0
-totalCoins: 123
----------------------
-username: Admin2
-password: 12345
-levelReached: 5
-level1Id: 0
-level2Id: 0
-level3Id: 0
-level4Id: 0
-level5Id: 0
-totalCoins: 125
----------------------
-username: Admin3
-password: 12345
-levelReached: 5
-level1Id: 0
-level2Id: 0
-level3Id: 0
-level4Id: 0
-level5Id: 0
-totalCoins: 120
----------------------
+Username: Admin1
+Password: 1
+LevelReached: 6
+Level1Id: 0
+Level2Id: 0
+Level3Id: 0
+Level4Id: 0
+Level5Id: 0
+TotalCoins: 501
+Discovered 'move': YES
+Discovered '#': YES
+Discovered '@': YES
+Discovered '%': YES
+Discovered '% work': YES
+Discovered '&': YES
+Discovered 'X': YES
+Discovered 'C': YES
+------------------------
+Username: Admin2
+Password: 1
+LevelReached: 6
+Level1Id: 0
+Level2Id: 0
+Level3Id: 0
+Level4Id: 0
+Level5Id: 0
+TotalCoins: 444
+Discovered 'move': YES
+Discovered '#': YES
+Discovered '@': YES
+Discovered '%': YES
+Discovered '% work': YES
+Discovered '&': YES
+Discovered 'X': YES
+Discovered 'C': YES
+------------------------
+Username: Admin3
+Password: 1
+LevelReached: 6
+Level1Id: 0
+Level2Id: 0
+Level3Id: 0
+Level4Id: 0
+Level5Id: 0
+TotalCoins: 399
+Discovered 'move': YES
+Discovered '#': YES
+Discovered '@': YES
+Discovered '%': YES
+Discovered '% work': YES
+Discovered '&': YES
+Discovered 'X': YES
+Discovered 'C': YES
+------------------------
+Username: Admin4
+Password: 1
+LevelReached: 6
+Level1Id: 0
+Level2Id: 0
+Level3Id: 0
+Level4Id: 0
+Level5Id: 0
+TotalCoins: 250
+Discovered 'move': YES
+Discovered '#': YES
+Discovered '@': YES
+Discovered '%': YES
+Discovered '% work': YES
+Discovered '&': YES
+Discovered 'X': YES
+Discovered 'C': YES
+------------------------
+Username: Admin5
+Password: 1
+LevelReached: 6
+Level1Id: 0
+Level2Id: 0
+Level3Id: 0
+Level4Id: 0
+Level5Id: 0
+TotalCoins: 69
+Discovered 'move': YES
+Discovered '#': YES
+Discovered '@': YES
+Discovered '%': YES
+Discovered '% work': YES
+Discovered '&': YES
+Discovered 'X': YES
+Discovered 'C': YES
+------------------------
+Username: Admin6
+Password: 1
+LevelReached: 6
+Level1Id: 0
+Level2Id: 0
+Level3Id: 0
+Level4Id: 0
+Level5Id: 0
+TotalCoins: 51
+Discovered 'move': YES
+Discovered '#': YES
+Discovered '@': YES
+Discovered '%': YES
+Discovered '% work': YES
+Discovered '&': YES
+Discovered 'X': YES
+Discovered 'C': YES
+------------------------

@@ -25,28 +25,38 @@ void sortList();
 unsigned getCoinsCount(char** map);
 size_t getMapSize(unsigned level);
 char** getMap(unsigned level);
-std::string scoreboard(unsigned length);
-int* movement(std::string move, std::string username, size_t id, int playerX, int playerY);
-void updateData(std::string username, int numberOfLevel, int id);
-void loadLevels(std::string username, unsigned short levelReached, unsigned totalCoins, std::vector<size_t> levelIds);
+std::string scoreboard(unsigned length, std::string username);
+void movement(std::string move, Level& level, User& user);
+void updateData();
+void loadLevels(User user);
+unsigned* findPlayerCoords(char** map, unsigned size);
+User* getUser(const std::string& username);
+std::string livesToStr(unsigned short lives);
+void deleteFile(const std::string& filePath);
 
 const std::string PADDING = "    ";
 const std::string USERS_DATA_FILE = "files//users.data.txt";
 const std::string INITIAL_LEVEL_FILE = "files//level";
 const std::string LEVELS_STATE_FILE = "files//level//id";
 const short NUMBER_OF_LEVELS = 5;
-const std::string levelMessages = "Choose the number of a level to start playing the corresponding level!";
-const std::string menuMessages = "Welcome to Maze Game \n\n\nChoose one of the following by entering the corresponding number :\n\n1.Register\n\n2.Login\n\n";
+const std::string LEVEL_MESSAGES = "Choose the number of a level to start playing the corresponding level!";
+const std::string MENU_MESSAGES = "Welcome to Maze Game \n\n\nChoose one of the following by entering the corresponding number :\n\n1.Register\n\n2.Login\n\n";
 
 struct Level {
     size_t id;
     unsigned numberOfLevel;
     char** map;
-    unsigned coins;
+    unsigned short totalLevelCoins;
+    unsigned short levelCoinsLeft;
+    unsigned short levelCoinsTaken;
     bool keyFound;
     size_t size;
+    unsigned short livesLeft;
+    unsigned short playerX;
+    unsigned short playerY;
 
-    Level() : id(0), numberOfLevel(0), map(nullptr), coins(0), keyFound(false), size(0) {}
+    Level() : id(0), numberOfLevel(0), map(nullptr), totalLevelCoins(0), levelCoinsLeft(0), levelCoinsTaken(0), 
+        keyFound(false), size(0), livesLeft(0), playerX(0), playerY(0) {}
 
     Level(unsigned level) {
         if (level < 0 || level > 5) {
@@ -55,9 +65,15 @@ struct Level {
         }
         numberOfLevel = level;
         map = getMap(level);
-        coins = getCoinsCount(map);
+        totalLevelCoins = getCoinsCount(map);
         keyFound = false;
         size = getMapSize(level);
+        levelCoinsLeft = totalLevelCoins;
+        levelCoinsTaken = 0;
+        livesLeft = 5;
+        unsigned* coords = findPlayerCoords(map, size);
+        playerX = coords[0];
+        playerY = coords[1];
     }
 
     void save() {
@@ -79,12 +95,16 @@ struct Level {
             }
             mapStr += "\n";
         }
-        return 
-            "Size: " + std::to_string(size) + "\n"+
+        return
+            "Size: " + std::to_string(size) + "\n" +
             "Level: " + std::to_string(numberOfLevel) + "\n" +
-            //"ID: " + std::to_string(id) + "\n" +
-            "Coins: " + std::to_string(coins) + "\n" +
-            "Key Found: " + (keyFound ? "Yes" : "No") + "\n" +
+            "TotalLevelCoins: " + std::to_string(totalLevelCoins) + "\n" +
+            "LevelCoinsLeft: " + std::to_string(levelCoinsLeft) + "\n" +
+            "LevelCoinsTaken: " + std::to_string(levelCoinsTaken) + "\n" +
+            "KeyFound: " + (keyFound ? "Yes" : "No") + "\n" +
+            "LivesLeft: " + std::to_string(livesLeft) + "\n" +
+            "PlayerX: " + std::to_string(playerX) + "\n" + 
+            "PlayerY: " + std::to_string(playerY) + "\n" + 
             mapStr;
     }
 };
@@ -140,14 +160,25 @@ Level* getLevelById(size_t id) {
     }
     std::string current;
     Level* level = new Level();
+    (*level).id = id;
     std::getline(inputFile, current);
     (*level).size = toInt(getValue(current));
     std::getline(inputFile, current);
     (*level).numberOfLevel = toInt(getValue(current));
     std::getline(inputFile, current);
-    (*level).coins = toInt(getValue(current));
+    (*level).totalLevelCoins = toInt(getValue(current));
+    std::getline(inputFile, current);
+    (*level).levelCoinsLeft = toInt(getValue(current));
+    std::getline(inputFile, current);
+    (*level).levelCoinsTaken = toInt(getValue(current));
     std::getline(inputFile, current);
     (*level).keyFound = toInt(getValue(current));
+    std::getline(inputFile, current);
+    (*level).livesLeft = toInt(getValue(current));
+    std::getline(inputFile, current);
+    (*level).playerX = toInt(getValue(current));
+    std::getline(inputFile, current);
+    (*level).playerY = toInt(getValue(current));
     (*level).map = new char* [(*level).size];
     for (int i = 0; i < (*level).size; ++i) {
         std::getline(inputFile, current);
@@ -158,13 +189,11 @@ Level* getLevelById(size_t id) {
     return level;
 }
 
-static int* findPlayerCoords(int levelId) {
-    Level* levelPtr = getLevelById(levelId);
-    char** map = (*levelPtr).map;
-    for (int i = 0; i < (*levelPtr).size; i++) {
-        for (int j = 0; j < (*levelPtr).size; j++) {
+unsigned* findPlayerCoords(char** map, unsigned size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
             if (map[i][j] == '@') {
-                int* arr = new int[2];
+                unsigned* arr = new unsigned[2];
                 arr[0] = i;
                 arr[1] = j;
                 return arr;
@@ -173,32 +202,6 @@ static int* findPlayerCoords(int levelId) {
     }
 }
 
-void visualizeLevel(Level level, std::string username) {
-    std::string move;
-    level.save();
-    int* coords = findPlayerCoords(level.id);
-    int x = coords[0];
-    int y = coords[1];
-    while (move != "exit" && move != "back") {
-        clearConsole();
-        printWithPadding(scoreboard(3), 1);
-        printWithPadding("Coins: " + std::to_string(level.coins));
-        printWithPadding("Key Found: " + boolToString(level.keyFound), 2);
-        for (int i = 0; i < level.size; i++) {
-            printWithPadding(" ", 0, false);
-            for (int j = 0; j < level.size; j++) {
-                std::string toAdd = level.map[i][j] == '#' ? "#" : " ";
-                std::cout << level.map[i][j] << toAdd;
-            }
-            std::cout << "\n";
-        }
-        int x = coords[0];
-        int y = coords[1];
-        std::cin >> move;
-        coords = movement(move, username, level.id, x, y);
-        updateData(username, level.numberOfLevel, level.id);
-    }
-}
 struct User {
     unsigned short levelReached;
     std::vector<size_t> levelIds;
@@ -218,7 +221,7 @@ struct User {
     }
 
     void enterlevelsMenu() {
-        loadLevels(username, levelReached, totalCoins, levelIds);
+        loadLevels(*getUser(username));
     }
 
     std::string toString() {
@@ -238,6 +241,34 @@ struct User {
 std::vector<User> userList;
 bool isSorted = false;
 
+void visualizeLevel(Level& level, User& user) {
+    User& userFromList = *getUser(user.username);
+    std::string move;
+    level.save();
+    while (true) {
+        clearConsole();
+        printWithPadding(scoreboard(3, user.username), 1);
+        printWithPadding("Coins: " + std::to_string(level.totalLevelCoins));
+        printWithPadding("Key Found: " + boolToString(level.keyFound), 2);
+        printWithPadding("Lives: " + livesToStr(level.livesLeft), 2);
+        for (int i = 0; i < level.size; i++) {
+            printWithPadding(" ", 0, false);
+            for (int j = 0; j < level.size; j++) {
+                std::string toAdd = level.map[i][j] == '#' ? "#" : " ";
+                std::cout << level.map[i][j] << toAdd;
+            }
+            std::cout << "\n";
+        }
+        std::cin >> move;
+        if (move == "exit" || move == "back") {
+            break;
+        }
+        movement(move, level, userFromList);
+        level.save();
+        updateData();
+    }
+}
+
 User* getUser(const std::string& username) {
     for (unsigned i = 0; i < userList.size(); ++i) {
         if (userList[i].username == username) {
@@ -245,6 +276,14 @@ User* getUser(const std::string& username) {
         }
     }
     return nullptr;
+}
+
+std::string livesToStr(unsigned short lives) {
+    std::string result = "";
+    for (size_t i = 0; i < lives; i++) {
+        result += " <3";
+    }
+    return result;
 }
 
 void loadAllUsers() {
@@ -279,13 +318,16 @@ void clearConsole() {
     system("cls");
 }
 
-void updateData(std::string username, int numberOfLevel, int id) {
+void updateData() {
     std::fstream file(USERS_DATA_FILE, std::ios::app);
     clearFileContent(USERS_DATA_FILE);
     int size = userList.size();
     for (int i = 0; i < size; i++) {
+        userList[i].totalCoins;
         file << userList[i].toString();
+        file << "----------------" << "\n";
     }
+    file.close();
     loadAllUsers();
 }
 
@@ -298,6 +340,15 @@ void clearFileContent(const std::string& filename) {
     file.close();
 }
 
+
+void deleteFile(const std::string& filePath) {
+    int status = remove(filePath.c_str());  // Convert std::string to C-style string using .c_str()
+    if (status != 0) {
+        std::cout << "Failed to delete file. Error code: " << errno << "\n";  // errno gives error details
+    }
+}
+
+
 void strCopy(char* arr, std::string str) {
     for (int i = 0; i < str.size(); i++) {
         arr[i] = str[i];
@@ -306,7 +357,7 @@ void strCopy(char* arr, std::string str) {
 }
 
 std::string boolToString(bool value) {
-    return (value ? "true" : "false");
+    return (value ? "YES" : "NO");
 }
 
 int toInt(const std::string& str) {
@@ -360,7 +411,7 @@ std::string loadMenu() {
     unsigned option;
     while (true) {
         printWithPadding("type \"back\" to go back or \"exit\" to exit the program", 2);
-        printWithPadding(menuMessages);
+        printWithPadding(MENU_MESSAGES);
         printWithPadding("Enter your choice: ", 0, false);
         std::cin >> optionStr;
         if (optionStr == "exit" || optionStr == "back") {
@@ -384,9 +435,9 @@ std::string loadMenu() {
 }
 
 void registration(User* user) {
-    std::ofstream outputFile(USERS_DATA_FILE, std::ios::out);
+    std::ofstream outputFile(USERS_DATA_FILE, std::ios::app);
     outputFile << (*user).toString();
-    outputFile << "---------------------" << "\n";
+    outputFile << "----------------" << "\n";
     outputFile.close();
     loadAllUsers();
 }
@@ -487,78 +538,90 @@ size_t generateRandomId() {
     return id;
 }
 
-void loadLevels(std::string username, unsigned short levelReached, unsigned totalCoins, std::vector<size_t> levelIds) {
-    printWithPadding("type \"back\" to go back or \"exit\" to exit the program", 2);
-    printWithPadding(levelMessages, 2);
-    for (unsigned i = 0; i < levelIds.size(); ++i) {
-        std::string status = i + 1 < levelReached ? "Completed" : "Not Completed";
-        printWithPadding("Level: " + std::to_string(i + 1) + " - " + status);
-    }
-    std::string optionStr;
-    std::cin >> optionStr;
-    if (optionStr == "back") {
-        clearConsole();
-        main();
-        return;
-    }
-    if (optionStr == "exit") {
-        clearConsole();
-        return;
-    }
-    unsigned short option = toInt(optionStr);
-    if (option == -1 || option > levelIds.size() || option < 1) {
-        failedInput("Invalid number");
-        loadLevels(username, levelReached, totalCoins, levelIds);
-        return;
-    }
-    if (option > levelReached) {
-        failedInput("Level not reached");
-        loadLevels(username, levelReached, totalCoins, levelIds);
-        return;
-    }
-    Level* current = getLevelById(levelIds[option - 1]);
-    if (current != nullptr) {
-        clearConsole();
-        printWithPadding("Do you want to continue? (enter \"yes\") or \"no\"");
-        std::string continueLevel;
-        std::cin >> continueLevel;
-        if (continueLevel == "yes") {
-            visualizeLevel(*current, username);
+void loadLevels(User user) {
+    Level* currentLevelPtr = nullptr;
+    User& userFromList = *getUser(user.username);
+    while (true) {
+        printWithPadding("Type \"back\" to go back or \"exit\" to exit the program", 2);
+        printWithPadding(LEVEL_MESSAGES, 2);
+        for (unsigned i = 0; i < user.levelIds.size(); ++i) {
+            std::string status = (i + 1 < user.levelReached) ? "Completed" : "Not Completed";
+            printWithPadding("Level: " + std::to_string(i + 1) + " - " + status);
         }
-        else if (continueLevel == "no") {
-            //continues
+        std::string optionStr;
+        std::cin >> optionStr;
+        if (optionStr == "back") {
+            clearConsole();
+            return;
         }
-        else {
-            failedInput("Invalid input");
-            loadLevels(username, levelReached, totalCoins, levelIds);
+        if (optionStr == "exit") {
+            clearConsole();
+            exit(0);
         }
+        unsigned short option = toInt(optionStr);
+        if (option == 0 || option > user.levelIds.size() || option < 1) {
+            failedInput("Invalid number");
+            continue;
+        }
+        if (option > user.levelReached) {
+            failedInput("Level not reached");
+            continue;
+        }
+        currentLevelPtr = getLevelById(user.levelIds[option - 1]);
+        if (currentLevelPtr != nullptr) {
+            clearConsole();
+            printWithPadding("Do you want to continue? (enter \"yes\" or \"no\")");
+            std::string continueLevel;
+            std::cin >> continueLevel;
+            if (continueLevel == "yes") {
+                visualizeLevel(*currentLevelPtr, *getUser(user.username));
+                delete currentLevelPtr;
+                return;
+            }
+            else if (continueLevel == "no") {
+                userFromList.totalCoins -= (*currentLevelPtr).levelCoinsTaken;
+                // removes the previouly-stored state of the level
+                deleteFile(LEVELS_STATE_FILE + std::to_string((*currentLevelPtr).id) + ".txt");
+                updateData();
+            }
+            else {
+                failedInput("Invalid input");
+                continue;
+            }
+        }
+        delete currentLevelPtr;
+        Level level(option);
+        level.id = generateRandomId();
+        userFromList.levelIds[level.numberOfLevel - 1] = level.id; // stores the id of the n-th level in levelIds[n - 1]
+        updateData();
+        visualizeLevel(level, user);
+        return;
     }
-    delete current;
-    Level level(option);
-    level.id = generateRandomId();
-    visualizeLevel(level, username);
 }
 
-int* movement(std::string move, std::string username, size_t id, int playerX, int playerY) {
-    User* user = getUser(username);
-    (*user).totalCoins += 10;
-    (*user).levelIds[(*getLevelById(id)).numberOfLevel - 1] = id;
-    int* coords = new int[2];
-    coords[0] = playerX;
-    coords[1] = playerY;
-    std::cin;
-    return coords;
+void movement(std::string move, Level& level, User& user) {
+    user.totalCoins += 10;
+    level.levelCoinsTaken += 10;
+    isSorted = false;
+    if (level.livesLeft > 0) {
+        level.livesLeft--;
+    }
+    level.playerX;
+    level.playerY;
 }
 
-std::string scoreboard(unsigned length) {
+std::string scoreboard(unsigned length, std::string username) {
     loadAllUsers();
     sortList();
-    std::cout << userList.size();
     std::string result = "";
     int size = userList.size();
-    int range = length < size ? length : size;
-    for (int i = 0; i < range; i++) {
-        result += std::to_string(i + 1) + ". " + userList[i].username + " coins: " + std::to_string(userList[i].totalCoins) + "\n";
+    for (int i = 0; i < size; i++) {
+        if (userList[i].username == username) {
+            result += std::to_string(i + 1) + ". " + username + " coins: " + std::to_string(userList[i].totalCoins) + "\n";
+        }
+        else if (i < length) {
+            result += std::to_string(i + 1) + ". " + userList[i].username + " coins: " + std::to_string(userList[i].totalCoins) + "\n";
+        }
     }
     return result;
 }

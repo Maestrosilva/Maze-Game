@@ -26,19 +26,24 @@ unsigned getCoinsCount(char** map);
 size_t getMapSize(unsigned level);
 char** getMap(unsigned level);
 std::string scoreboard(unsigned length, std::string username);
-void movement(std::string move, Level& level, User& user);
+std::string movement(std::string move, Level& level, User& user);
 void updateData();
 void loadLevels(User user);
 unsigned* findPlayerCoords(char** map, unsigned size);
 User* getUser(const std::string& username);
 std::string livesToStr(unsigned short lives);
 void deleteFile(const std::string& filePath);
+void swap(char& a, char& b);
+bool strToBool(std::string value);
+unsigned* findNextPortal(unsigned short row, Level level);
+bool isAround(const Level level, const char a);
 
 const std::string PADDING = "    ";
 const std::string USERS_DATA_FILE = "files//users.data.txt";
 const std::string INITIAL_LEVEL_FILE = "files//level";
 const std::string LEVELS_STATE_FILE = "files//level//id";
 const short NUMBER_OF_LEVELS = 5;
+const short NUMBER_OF_DISCOVERIES = 8;
 const std::string LEVEL_MESSAGES = "Choose the number of a level to start playing the corresponding level!";
 const std::string MENU_MESSAGES = "Welcome to Maze Game \n\n\nChoose one of the following by entering the corresponding number :\n\n1.Register\n\n2.Login\n\n";
 
@@ -46,7 +51,6 @@ struct Level {
     size_t id;
     unsigned numberOfLevel;
     char** map;
-    unsigned short totalLevelCoins;
     unsigned short levelCoinsLeft;
     unsigned short levelCoinsTaken;
     bool keyFound;
@@ -55,7 +59,7 @@ struct Level {
     unsigned short playerX;
     unsigned short playerY;
 
-    Level() : id(0), numberOfLevel(0), map(nullptr), totalLevelCoins(0), levelCoinsLeft(0), levelCoinsTaken(0), 
+    Level() : id(0), numberOfLevel(0), map(nullptr), levelCoinsLeft(0), levelCoinsTaken(0), 
         keyFound(false), size(0), livesLeft(0), playerX(0), playerY(0) {}
 
     Level(unsigned level) {
@@ -65,10 +69,9 @@ struct Level {
         }
         numberOfLevel = level;
         map = getMap(level);
-        totalLevelCoins = getCoinsCount(map);
+        levelCoinsLeft = getCoinsCount(map);
         keyFound = false;
         size = getMapSize(level);
-        levelCoinsLeft = totalLevelCoins;
         levelCoinsTaken = 0;
         livesLeft = 5;
         unsigned* coords = findPlayerCoords(map, size);
@@ -98,7 +101,6 @@ struct Level {
         return
             "Size: " + std::to_string(size) + "\n" +
             "Level: " + std::to_string(numberOfLevel) + "\n" +
-            "TotalLevelCoins: " + std::to_string(totalLevelCoins) + "\n" +
             "LevelCoinsLeft: " + std::to_string(levelCoinsLeft) + "\n" +
             "LevelCoinsTaken: " + std::to_string(levelCoinsTaken) + "\n" +
             "KeyFound: " + (keyFound ? "Yes" : "No") + "\n" +
@@ -166,13 +168,11 @@ Level* getLevelById(size_t id) {
     std::getline(inputFile, current);
     (*level).numberOfLevel = toInt(getValue(current));
     std::getline(inputFile, current);
-    (*level).totalLevelCoins = toInt(getValue(current));
-    std::getline(inputFile, current);
     (*level).levelCoinsLeft = toInt(getValue(current));
     std::getline(inputFile, current);
     (*level).levelCoinsTaken = toInt(getValue(current));
     std::getline(inputFile, current);
-    (*level).keyFound = toInt(getValue(current));
+    (*level).keyFound = strToBool(getValue(current));
     std::getline(inputFile, current);
     (*level).livesLeft = toInt(getValue(current));
     std::getline(inputFile, current);
@@ -202,21 +202,42 @@ unsigned* findPlayerCoords(char** map, unsigned size) {
     }
 }
 
+unsigned* findNextPortal(unsigned short row, Level level) {
+    for (size_t i = row + 1; i < level.size; i++) {
+        for (size_t j = 1; j < level.size - 1; j++) {
+            if (level.map[i][j] == '%') {
+                unsigned* coords = new unsigned[2];
+                coords[0] = i;
+                coords[1] = j;
+                return coords;
+            }
+        }
+    }
+    return findNextPortal(0, level);
+}
+
 struct User {
     unsigned short levelReached;
     std::vector<size_t> levelIds;
+    std::vector<bool> discovered;
     unsigned short totalCoins;
     std::string username;
     std::string password;
 
-    User(std::string passedUsername = "", std::string passedPassword = "") {
+    User()
+        : levelReached(1), levelIds(NUMBER_OF_LEVELS, 0), discovered(NUMBER_OF_DISCOVERIES, false), totalCoins(0), username(""), password("") {}
+
+    User(std::string passedUsername, std::string passedPassword) {
         username = passedUsername;
         password = passedPassword;
         totalCoins = 0;
         levelReached = 1;
-        for (int i = 0; i < NUMBER_OF_LEVELS; i++) {
+        for (size_t i = 0; i < NUMBER_OF_LEVELS; i++) {
             size_t id = 0;
             levelIds.push_back(id);
+        }
+        for (size_t i = 0; i < NUMBER_OF_DISCOVERIES; i++) {
+            discovered.push_back(false);
         }
     }
 
@@ -226,31 +247,41 @@ struct User {
 
     std::string toString() {
         std::string levelStatesStr;
+        std::string discoveriesStr;
         for (unsigned i = 0; i < levelIds.size(); ++i) {
             levelStatesStr += "Level" + std::to_string(i + 1) + "Id: " + std::to_string((long long)(levelIds[i])) + "\n";
         }
+        discoveriesStr += "Discovered 'move': " + boolToString(discovered[0]) + "\n";
+        discoveriesStr += "Discovered '#': " + boolToString(discovered[1]) + "\n";
+        discoveriesStr += "Discovered '@': " + boolToString(discovered[2]) + "\n";
+        discoveriesStr += "Discovered '%': " + boolToString(discovered[3]) + "\n";
+        discoveriesStr += "Discovered '% work': " + boolToString(discovered[4]) + "\n";
+        discoveriesStr += "Discovered '&': " + boolToString(discovered[5]) + "\n";
+        discoveriesStr += "Discovered 'X': " + boolToString(discovered[6]) + "\n";
+        discoveriesStr += "Discovered 'C': " + boolToString(discovered[7]) + "\n";
         return "Username: " + username + "\n"
             + "Password: " + password + "\n"
             + "LevelReached: " + std::to_string(levelReached) + "\n"
             + levelStatesStr
-            + "TotalCoins: " + std::to_string(totalCoins) + "\n";
+            + "TotalCoins: " + std::to_string(totalCoins) + "\n"
+            + discoveriesStr;
     }
-
 };
 
 std::vector<User> userList;
-bool isSorted = false;
 
 void visualizeLevel(Level& level, User& user) {
     User& userFromList = *getUser(user.username);
     std::string move;
     level.save();
+    std::string message = movement("", level, userFromList);
+    updateData();
     while (true) {
         clearConsole();
-        printWithPadding(scoreboard(3, user.username), 1);
-        printWithPadding("Coins: " + std::to_string(level.totalLevelCoins));
-        printWithPadding("Key Found: " + boolToString(level.keyFound), 2);
-        printWithPadding("Lives: " + livesToStr(level.livesLeft), 2);
+        printWithPadding(scoreboard(3, user.username));
+        printWithPadding("Coins Left: " + std::to_string(level.levelCoinsLeft));
+        printWithPadding("Key Found: " + boolToString(level.keyFound), 1);
+        printWithPadding("Lives: " + livesToStr(level.livesLeft), 1);
         for (int i = 0; i < level.size; i++) {
             printWithPadding(" ", 0, false);
             for (int j = 0; j < level.size; j++) {
@@ -259,11 +290,22 @@ void visualizeLevel(Level& level, User& user) {
             }
             std::cout << "\n";
         }
-        std::cin >> move;
-        if (move == "exit" || move == "back") {
+        std::cout << "\n";
+        if (message == "stop") {
             break;
         }
-        movement(move, level, userFromList);
+        printWithPadding(message, 1);
+        std::cin >> move;
+        if (move == "exit") {
+            clearConsole();
+            break;
+        }
+        if (move == "back") {
+            clearConsole();
+            loadLevels(user);
+            break;
+        }
+        message = movement(move, level, userFromList);
         level.save();
         updateData();
     }
@@ -271,6 +313,7 @@ void visualizeLevel(Level& level, User& user) {
 
 User* getUser(const std::string& username) {
     for (unsigned i = 0; i < userList.size(); ++i) {
+        userList[i];
         if (userList[i].username == username) {
             return &userList[i];
         }
@@ -307,6 +350,10 @@ void loadAllUsers() {
         }
         std::getline(inputFile, current);
         user.totalCoins = toInt(getValue(current));
+        for (unsigned i = 0; i < NUMBER_OF_DISCOVERIES; i++) {
+            std::getline(inputFile, current);
+            user.discovered[i] = strToBool(getValue(current));
+        }
         std::getline(inputFile, current);
         current;
         userList.push_back(user);
@@ -318,6 +365,13 @@ void clearConsole() {
     system("cls");
 }
 
+bool isAround(const Level level, const char a) {
+    size_t x = level.playerX;
+    size_t y = level.playerY;
+    return level.map[x - 1][y] == a || level.map[x + 1][y] == a
+        || level.map[x][y - 1] == a || level.map[x][y + 1] == a;
+}
+
 void updateData() {
     std::fstream file(USERS_DATA_FILE, std::ios::app);
     clearFileContent(USERS_DATA_FILE);
@@ -325,7 +379,7 @@ void updateData() {
     for (int i = 0; i < size; i++) {
         userList[i].totalCoins;
         file << userList[i].toString();
-        file << "----------------" << "\n";
+        file << "------------------------" << "\n";
     }
     file.close();
     loadAllUsers();
@@ -368,6 +422,11 @@ int toInt(const std::string& str) {
     }
     return number;
 }
+
+bool strToBool(std::string value) {
+    return value == "YES" || value == "true";
+}
+
 
 std::string getValue(const std::string& str) { //<field_name>: <fileld_value> ==> <field_value>
     size_t pos = str.find(": ");
@@ -437,7 +496,7 @@ std::string loadMenu() {
 void registration(User* user) {
     std::ofstream outputFile(USERS_DATA_FILE, std::ios::app);
     outputFile << (*user).toString();
-    outputFile << "----------------" << "\n";
+    outputFile << "------------------------" << "\n";
     outputFile.close();
     loadAllUsers();
 }
@@ -599,49 +658,182 @@ void loadLevels(User user) {
     }
 }
 
-void movement(std::string move, Level& level, User& user) {
-    user.totalCoins += 10;
-    level.levelCoinsTaken += 10;
-    isSorted = false;
-    if (level.livesLeft > 0) {
+std::string movement(std::string move, Level& level, User& user) {
+    /*
+        discoveriesStr += "Discovered 'move': " + boolToString(dicoveries[0]);
+        discoveriesStr += "Discovered '#': " + boolToString(dicoveries[1]);
+        discoveriesStr += "Discovered '@': " + boolToString(dicoveries[2]);
+        discoveriesStr += "Discovered '%': " + boolToString(dicoveries[3]);
+        discoveriesStr += "Discovered '% work': " + boolToString(dicoveries[4]);
+        discoveriesStr += "Discovered '&': " + boolToString(dicoveries[5]);
+        discoveriesStr += "Discovered 'X': " + boolToString(dicoveries[6]);
+        discoveriesStr += "Discovered 'C': " + boolToString(dicoveries[7]);
+    */
+    std::string message = "";
+    if (!user.discovered[2]) {
+        user.discovered[2] = true;
+        message += "'@' - this is you.\n";
+    }
+    if (!user.discovered[0]) {
+        user.discovered[0] = true;
+        message += "Enter 'A', 'S', 'D' or 'W' (all case intensive) to move!\n";
+    }
+    unsigned short newX = level.playerX;
+    unsigned short newY = level.playerY;
+    if (move == "W" || move == "w") {
+        newX--;
+    }
+    else if (move == "S" || move == "s") {
+        newX++;
+    }
+    else if (move == "A" || move == "a") {
+        newY--;
+    }
+    else if (move == "D" || move == "d") {
+        newY++;
+    }
+    char next = level.map[newX][newY];
+    if (next == ' ') {
+        swap(level.map[level.playerX][level.playerY], level.map[newX][newY]);
+        level.playerX = newX;
+        level.playerY = newY;
+    }
+    if (next == '#') {
+        if (!user.discovered[1]) {
+            user.discovered[1] = true;
+            message += "'#' - these are walls. Walls hurt. Don't bump into them!\n";
+        }
         level.livesLeft--;
     }
-    level.playerX;
-    level.playerY;
+    if (next == 'C') {
+        if (!user.discovered[7]) {
+            user.discovered[7] = true;
+            message += "'C' - this is a coin. Collect as many of them as you can to go up the scoreboard list!\n";
+        }
+        level.levelCoinsTaken++;
+        level.levelCoinsLeft--;
+        user.totalCoins++;
+        level.map[newX][newY] = ' ';
+        swap(level.map[level.playerX][level.playerY], level.map[newX][newY]);
+        level.playerX = newX;
+        level.playerY = newY;
+    }
+    if (next == '&') {
+        level.map[newX][newY] = ' ';
+        swap(level.map[level.playerX][level.playerY], level.map[newX][newY]);
+        level.keyFound = true;
+        level.playerX = newX;
+        level.playerY = newY;
+    }
+    if (next == '%') {
+        unsigned* coords = findNextPortal(newX, level);
+        if (!user.discovered[4]) {
+            user.discovered[4] = true;
+            message += "You teleport to the next portal (downwise if exists, else top-most one)\n"
+                "from the side same as the direction you were going.\n";
+        }
+        newX = coords[0] - level.playerX + newX;
+        newY = coords[1] - level.playerY + newY;
+        if (level.map[newX][newY] == '#') {
+            level.livesLeft--;
+            if (!user.discovered[1]) {
+                user.discovered[1] = true;
+                message += "'#' - these are walls. Walls hurt. Don't bump into them!\n";
+            }
+        }
+        else {
+            level.map[level.playerX][level.playerY] = ' ';
+            level.playerX = newX;
+            level.playerY = newY;
+        }
+        level.map[level.playerX][level.playerY] = '@';
+        delete[] coords;
+    }
+    if (next == 'X' && !level.keyFound) {
+        message += "You have to find the key first!\n";
+    }
+
+    if (next == 'X' && level.keyFound) {
+        user.levelReached = level.numberOfLevel + 1;
+        clearConsole();
+        printWithPadding("", 2);
+        printWithPadding("CONGRATULATIONS, you passed level " + std::to_string(level.numberOfLevel), 1);
+        promptAndClearConsole("continue...");
+        user.levelIds[level.numberOfLevel - 1] = 0;
+        deleteFile(LEVELS_STATE_FILE + std::to_string(level.id) + ".txt");
+        updateData();
+        loadLevels(user);
+        return "stop";
+    }
+
+    if (level.livesLeft == 0) {
+        clearConsole();
+        printWithPadding("", 2);
+        printWithPadding("YOU DIED!", 1);
+        promptAndClearConsole("Start Again!");
+        user.levelIds[level.numberOfLevel - 1] = 0;
+        user.totalCoins -= level.levelCoinsTaken;
+        deleteFile(LEVELS_STATE_FILE + std::to_string(level.id) + ".txt");
+        updateData();
+        loadLevels(user);
+        return "stop";
+    }
+
+    if (!user.discovered[3] && isAround(level, 'X')) {
+        user.discovered[3] = true;
+        message += "'X' - this is the treasure. You need to open it with a key to finish the level.\n";
+    }
+    if (!user.discovered[3] && isAround(level, '%')) {
+        user.discovered[3] = true;
+        message += "'%' - this is a portal.\n";
+    }
+    if (!user.discovered[6] && isAround(level, '&')) {
+        user.discovered[6] = true;
+        message += "'&' - this is a key. You need it to open the treasure.\n";
+    }
+
+    return message;
 }
 
 std::string scoreboard(unsigned length, std::string username) {
     loadAllUsers();
     sortList();
-    std::string result = "";
+    std::string result = "Leadreboard: \n\n";
     int size = userList.size();
     for (int i = 0; i < size; i++) {
         if (userList[i].username == username) {
-            result += std::to_string(i + 1) + ". " + username + " coins: " + std::to_string(userList[i].totalCoins) + "\n";
+            if(i >= length){
+                result += "\n";
+            }
+            result += PADDING + std::to_string(i + 1) + ". " + username + " coins: " + std::to_string(userList[i].totalCoins) + "\n";
         }
         else if (i < length) {
-            result += std::to_string(i + 1) + ". " + userList[i].username + " coins: " + std::to_string(userList[i].totalCoins) + "\n";
+            result += PADDING + std::to_string(i + 1) + ". " + userList[i].username + " coins: " + std::to_string(userList[i].totalCoins) + "\n";
         }
     }
+    result += "\n<------------------------------------>\n";
     return result;
 }
 
+void swap(char& a, char& b) {
+    a ^= b;
+    b ^= a;
+    a ^= b;
+}
+
 void sortList() {
-    if (!isSorted) {
-        isSorted = true;
-        size_t size = userList.size();
-        for (int i = 0; i < size; i++) {
-            int index = i;
-            for (int j = i + 1; j < size; j++) {
-                if (userList[j].totalCoins > userList[index].totalCoins) {
-                    index = j;
-                }
+    size_t size = userList.size();
+    for (int i = 0; i < size; i++) {
+        int index = i;
+        for (int j = i + 1; j < size; j++) {
+            if (userList[j].totalCoins > userList[index].totalCoins) {
+                index = j;
             }
-            if (index != i) {
-                User temp = userList[i];
-                userList[i] = userList[index];
-                userList[index] = temp;
-            }
+        }
+        if (index != i) {
+            User temp = userList[i];
+             userList[i] = userList[index];
+             userList[index] = temp;
         }
     }
 }

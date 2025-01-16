@@ -609,8 +609,8 @@ void loadLevels(User user) {
     while (true) {
         printWithPadding("Type \"back\" to go back or \"exit\" to exit the program", 2);
         printWithPadding(LEVEL_MESSAGES, 2);
-        for (unsigned i = 0; i < user.levelIds.size(); ++i) {
-            std::string status = (i + 1 < user.levelReached) ? "Completed" : "Not Completed";
+        for (unsigned i = 0; i < userFromList.levelIds.size(); ++i) {
+            std::string status = (i + 1 < userFromList.levelReached) ? "Completed" : "Not Completed";
             printWithPadding("Level: " + std::to_string(i + 1) + " - " + status);
         }
         std::string optionStr;
@@ -625,7 +625,7 @@ void loadLevels(User user) {
             return;
         }
         unsigned short option = toInt(optionStr);
-        if (option == 0 || option > user.levelIds.size() || option < 1) {
+        if (option == 0 || option > userFromList.levelIds.size() || option < 1) {
             failedInput("Invalid number");
             continue;
         }
@@ -633,14 +633,14 @@ void loadLevels(User user) {
             failedInput("Level not reached");
             continue;
         }
-        currentLevelPtr = getLevelById(user.levelIds[option - 1]);
+        currentLevelPtr = getLevelById(userFromList.levelIds[option - 1]);
         if (currentLevelPtr != nullptr) {
             clearConsole();
             printWithPadding("Do you want to continue? (enter \"yes\" or \"no\")");
             std::string continueLevel;
             std::cin >> continueLevel;
             if (continueLevel == "yes") {
-                visualizeLevel(*currentLevelPtr, *getUser(user.username));
+                visualizeLevel(*currentLevelPtr, *getUser(userFromList.username));
                 delete currentLevelPtr;
                 return;
             }
@@ -661,7 +661,7 @@ void loadLevels(User user) {
         level.id = generateRandomId();
         userFromList.levelIds[level.numberOfLevel - 1] = level.id; // stores the id of the n-th level in levelIds[n - 1]
         updateData();
-        visualizeLevel(level, user);
+        visualizeLevel(level, userFromList);
         return;
     }
 }
@@ -762,7 +762,7 @@ std::string movement(std::string move, Level& level, User& user) {
 
     // Handle level completion
     if (*next == 'X' && level.keyFound) {
-        user.levelReached = user.levelReached > level.numberOfLevel + 1 ? user.levelReached : level.numberOfLevel;
+        user.levelReached = user.levelReached > level.numberOfLevel + 1 ? user.levelReached : level.numberOfLevel + 1;
         clearConsole();
         printWithPadding("", 2);
         printWithPadding("CONGRATULATIONS, you passed level " + std::to_string(level.numberOfLevel), 1);

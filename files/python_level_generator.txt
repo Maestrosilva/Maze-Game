@@ -1,0 +1,104 @@
+import random
+
+def generate_maze(n):
+    # Ensure map is at least 5x5 to fit all elements
+    if n < 5:
+        raise ValueError("Map size must be at least 5x5.")
+    
+    # Create an empty map filled with walls
+    map_grid = [['#' for _ in range(n)] for _ in range(n)]
+    
+    # List of directions: up, down, left, right
+    directions = [(-2, 0), (2, 0), (0, -2), (0, 2)]
+    
+    def is_valid(x, y):
+        return 1 <= x < n-1 and 1 <= y < n-1
+    
+    # Initialize maze generation
+    def generate_maze_from(x, y):
+        map_grid[x][y] = ' '  # Mark the current cell as path
+        random.shuffle(directions)
+        
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            if is_valid(nx, ny) and map_grid[nx][ny] == '#':
+                # Check the cell one step away
+                mx, my = x + dx // 2, y + dy // 2
+                if is_valid(mx, my) and map_grid[mx][my] == '#':
+                    map_grid[mx][my] = ' '  # Make the cell one step away a path
+                    map_grid[nx][ny] = ' '  # Make the next cell a path
+                    generate_maze_from(nx, ny)
+    
+    # Start maze generation from the center
+    start_x, start_y = n // 2, n // 2
+    generate_maze_from(start_x, start_y)
+    
+    # Ensure the outer boundary is walls
+    for i in range(n):
+        map_grid[0][i] = '#'
+        map_grid[n-1][i] = '#'
+        map_grid[i][0] = '#'
+        map_grid[i][n-1] = '#'
+    
+    # Random positions for special items
+    positions = [(x, y) for x in range(1, n-1) for y in range(1, n-1) if map_grid[x][y] == ' ']
+    random.shuffle(positions)
+    
+    # Place player
+    player_pos = positions.pop()
+    map_grid[player_pos[0]][player_pos[1]] = '@'
+    
+    # Place key
+    key_pos = positions.pop()
+    map_grid[key_pos[0]][key_pos[1]] = '&'
+    
+    # Place treasure
+    treasure_pos = positions.pop()
+    map_grid[treasure_pos[0]][treasure_pos[1]] = 'X'
+    
+    # Place coins, increase number with map size
+    num_coins = n
+    for _ in range(num_coins):
+        coin_pos = positions.pop()
+        map_grid[coin_pos[0]][coin_pos[1]] = 'C'
+    
+    # Place teleports, increase number with map size
+    num_teleports = n // 2
+    teleports = []
+    for _ in range(num_teleports):
+        teleport_pos = positions.pop()
+        map_grid[teleport_pos[0]][teleport_pos[1]] = '%'
+        teleports.append(teleport_pos)
+    
+    return map_grid, teleports, player_pos, key_pos, treasure_pos
+
+def print_map(map_grid):
+    for row in map_grid:
+        print(''.join(row))
+
+def bfs_solvable(map_grid, player_pos, key_pos, treasure_pos):
+    n = len(map_grid)
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    visited = [[False for _ in range(n)] for _ in range(n)]
+    
+    queue = [player_pos]
+    visited[player_pos[0]][player_pos[1]] = True
+    
+    while queue:
+        x, y = queue.pop(0)
+        
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            
+            if 0 <= nx < n and 0 <= ny < n and not visited[nx][ny] and map_grid[nx][ny] != '#':
+                visited[nx][ny] = True
+                queue.append((nx, ny))
+    
+    return visited[key_pos[0]][key_pos[1]] and visited[treasure_pos[0]][treasure_pos[1]]
+
+def main():
+    map_grid, teleports, player_pos, key_pos, treasure_pos = generate_maze(18)
+    print_map(map_grid)
+
+if __name__ == "__main__":
+    main()

@@ -1,7 +1,7 @@
 ## Dungen Escape (or Maze Game)
 
 ### Overview
-**Dungen Escape** (or **Maze Game**) is an exciting and challenging maze adventure where your goal is to escape from a labyrinth. Along the way, you’ll need to find a **key ('&')** to open the **treasure ('X')**, collect coins ('C'), and navigate around walls ('#') and teleporters ('%'). The game is designed to test your decision-making, problem-solving, and navigation skills as you advance through progressively harder levels.
+**Dungen Escape** (or **Maze Game**) is an exciting and challenging maze adventure where your goal is to escape from a labyrinth. Along the way, you’ll need to find a **key ('&')** to open the **treasure ('X')**, collect **coins ('C')**, and navigate around **walls ('#')** and **teleporters ('%')**. The game is designed to test your decision-making, problem-solving, and navigation skills as you advance through progressively harder levels.
 
 ### Gameplay
 - **Maze Navigation**: The game is set in a labyrinth full of obstacles, puzzles, and rewards. Your hero needs to navigate through the maze, searching for important items while avoiding traps and dangers. 

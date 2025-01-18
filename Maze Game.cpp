@@ -9,11 +9,11 @@
 int main();
 struct Level;
 struct User;
-int toInt(const std::string& str);
-std::string getValue(const std::string& str);
+int toInt(const std::string & str);
+std::string getValue(const std::string & str);
 void strCopy(char* arr, std::string str);
 void printWithPadding(const std::string message, const unsigned emptyRows = 0, const bool newRow = true);
-void clearFileContent(const std::string& filename);
+void clearFileContent(const std::string & filename);
 std::string loadMenu();
 void clearConsole();
 void promptAndClearConsole(std::string message);
@@ -26,13 +26,13 @@ unsigned getCoinsCount(char** map);
 size_t getMapSize(unsigned level, std::string path);
 char** getMap(unsigned level, std::string path);
 std::string scoreboard(unsigned length, std::string username);
-std::string movement(std::string move, Level& level, User& user);
+std::string movement(std::string move, Level & level, User & user);
 void updateData();
 void loadLevels(User user);
 unsigned* findPlayerCoords(char** map, unsigned size);
-User* getUser(const std::string& username);
+User* getUser(const std::string & username);
 std::string livesToStr(unsigned short lives);
-void deleteFile(const std::string& filePath);
+void deleteFile(const std::string & filePath);
 void swap(char& a, char& b);
 bool strToBool(std::string value);
 unsigned* findNextPortal(unsigned short row, Level level);
@@ -59,7 +59,7 @@ struct Level {
     unsigned short playerX;
     unsigned short playerY;
 
-    Level() : id(0), numberOfLevel(0), map(nullptr), levelCoinsLeft(0), levelCoinsTaken(0), 
+    Level() : id(0), numberOfLevel(0), map(nullptr), levelCoinsLeft(0), levelCoinsTaken(0),
         keyFound(false), size(0), livesLeft(0), playerX(0), playerY(0) {}
 
     Level(unsigned level) {
@@ -108,8 +108,8 @@ struct Level {
             "LevelCoinsTaken: " + std::to_string(levelCoinsTaken) + "\n" +
             "KeyFound: " + (keyFound ? "Yes" : "No") + "\n" +
             "LivesLeft: " + std::to_string(livesLeft) + "\n" +
-            "PlayerX: " + std::to_string(playerX) + "\n" + 
-            "PlayerY: " + std::to_string(playerY) + "\n" + 
+            "PlayerX: " + std::to_string(playerX) + "\n" +
+            "PlayerY: " + std::to_string(playerY) + "\n" +
             mapStr;
     }
 };
@@ -267,14 +267,14 @@ struct User {
             + "LevelReached: " + std::to_string(levelReached) + "\n"
             + levelStatesStr
             + "TotalCoins: " + std::to_string(totalCoins) + "\n"
-            + discoveriesStr 
+            + discoveriesStr
             + "StaysOnPortal: " + boolToString(staysOnPortal) + "\n";
     }
 };
 
 std::vector<User> userList;
 
-void visualizeLevel(Level& level, User& user) {
+void visualizeLevel(Level & level, User & user) {
     User& userFromList = *getUser(user.username);
     std::string move;
     level.save();
@@ -315,7 +315,7 @@ void visualizeLevel(Level& level, User& user) {
     }
 }
 
-User* getUser(const std::string& username) {
+User* getUser(const std::string & username) {
     for (unsigned i = 0; i < userList.size(); ++i) {
         userList[i];
         if (userList[i].username == username) {
@@ -391,7 +391,7 @@ void updateData() {
     loadAllUsers();
 }
 
-void clearFileContent(const std::string& filename) {
+void clearFileContent(const std::string & filename) {
     std::ofstream file(filename, std::ios::trunc);
     if (!file) {
         std::cerr << "Error opening the file!" << std::endl;
@@ -401,7 +401,7 @@ void clearFileContent(const std::string& filename) {
 }
 
 
-void deleteFile(const std::string& filePath) {
+void deleteFile(const std::string & filePath) {
     int status = remove(filePath.c_str());  // Convert std::string to C-style string using .c_str()
     if (status != 0) {
         std::cout << "Failed to delete file. Error code: " << errno << "\n";  // errno gives error details
@@ -420,7 +420,7 @@ std::string boolToString(bool value) {
     return (value ? "YES" : "NO");
 }
 
-int toInt(const std::string& str) {
+int toInt(const std::string & str) {
     int number = 0;
     for (char c : str) {
         if (c < '0' || c > '9') return -1;
@@ -434,7 +434,7 @@ bool strToBool(std::string value) {
 }
 
 
-std::string getValue(const std::string& str) { //<field_name>: <fileld_value> ==> <field_value>
+std::string getValue(const std::string & str) { //<field_name>: <fileld_value> ==> <field_value>
     size_t pos = str.find(": ");
     if (pos != std::string::npos) {
         return str.substr(pos + 2);
@@ -499,7 +499,7 @@ std::string loadMenu() {
     }
 }
 
-void registration(User* user) {
+void registration(User * user) {
     std::ofstream outputFile(USERS_DATA_FILE, std::ios::app);
     outputFile << (*user).toString();
     outputFile << "------------------------" << "\n";
@@ -666,7 +666,7 @@ void loadLevels(User user) {
     }
 }
 
-std::string movement(std::string move, Level& level, User& user) {
+std::string movement(std::string move, Level & level, User & user) {
     std::string message = "";
 
     // Initial instructions for the user
@@ -758,6 +758,8 @@ std::string movement(std::string move, Level& level, User& user) {
     // Handle treasure without key
     if (*next == 'X' && !level.keyFound) {
         message += "You have to find the key first!\n";
+        level.map[level.playerX][level.playerY] = '@';
+        return message;
     }
 
     // Handle level completion
@@ -812,7 +814,7 @@ std::string scoreboard(unsigned length, std::string username) {
     int size = userList.size();
     for (int i = 0; i < size; i++) {
         if (userList[i].username == username) {
-            if(i >= length){
+            if (i >= length) {
                 result += "\n";
             }
             result += PADDING + std::to_string(i + 1) + ". " + username + " coins: " + std::to_string(userList[i].totalCoins) + "\n";
@@ -842,8 +844,8 @@ void sortList() {
         }
         if (index != i) {
             User temp = userList[i];
-             userList[i] = userList[index];
-             userList[index] = temp;
+            userList[i] = userList[index];
+            userList[index] = temp;
         }
     }
 }

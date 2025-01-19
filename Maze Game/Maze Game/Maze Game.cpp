@@ -717,6 +717,7 @@ std::string movement(std::string move, Level& level, User*& user) {
         } level.livesLeft--;
         level.map[level.playerX][level.playerY] = '@';
     }
+        
     // Restore teleport when moving off it
     else if ((*user).staysOnPortal && *next != '#' && (move == "W" || move == "w" || move == "S" || move == "s"
         || move == "A" || move == "a" || move == "D" || move == "d")) {
@@ -746,7 +747,8 @@ std::string movement(std::string move, Level& level, User*& user) {
         level.map[newX][newY] = '@';
         sortList(user);
     }
-
+    
+    // Handle key taking
     if (*next == '&') {
         if (!(*user).discovered[6]) {
             (*user).discovered[6] = true;
@@ -757,7 +759,8 @@ std::string movement(std::string move, Level& level, User*& user) {
         level.playerY = newY;
         level.map[newX][newY] = '@';
     }
-
+    
+    // Handle teleportation
     if (*next == '%') {
         unsigned* coords = findNextPortal(newX, level);
         level.map[level.playerX][level.playerY] = ' ';  // Restore previous teleport

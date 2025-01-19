@@ -1,0 +1,15 @@
+﻿  Maze Game.cpp
+C:\Users\ГЕРО\Desktop\dynamic programming\Maze Game\Maze Game\Maze Game.cpp(113,71): warning C4267: 'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
+C:\Users\ГЕРО\Desktop\dynamic programming\Maze Game\Maze Game\Maze Game.cpp(197,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\ГЕРО\Desktop\dynamic programming\Maze Game\Maze Game\Maze Game.cpp(198,27): warning C4018: '<': signed/unsigned mismatch
+C:\Users\ГЕРО\Desktop\dynamic programming\Maze Game\Maze Game\Maze Game.cpp(214,29): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
+C:\Users\ГЕРО\Desktop\dynamic programming\Maze Game\Maze Game\Maze Game.cpp(215,29): warning C4267: '=': conversion from 'size_t' to 'unsigned int', possible loss of data
+C:\Users\ГЕРО\Desktop\dynamic programming\Maze Game\Maze Game\Maze Game.cpp(395,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\ГЕРО\Desktop\dynamic programming\Maze Game\Maze Game\Maze Game.cpp(832,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\ГЕРО\Desktop\dynamic programming\Maze Game\Maze Game\Maze Game.cpp(835,19): warning C4018: '>=': signed/unsigned mismatch
+C:\Users\ГЕРО\Desktop\dynamic programming\Maze Game\Maze Game\Maze Game.cpp(840,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\ГЕРО\Desktop\dynamic programming\Maze Game\Maze Game\Maze Game.cpp(888,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+C:\Users\ГЕРО\Desktop\dynamic programming\Maze Game\Maze Game\Maze Game.cpp(511,1): warning C4715: 'loadMenu': not all control paths return a value
+C:\Users\ГЕРО\Desktop\dynamic programming\Maze Game\Maze Game\Maze Game.cpp(207,1): warning C4715: 'findPlayerCoords': not all control paths return a value
+  LINK : C:\Users\ГЕРО\Desktop\dynamic programming\Maze Game\x64\Debug\Maze Game.exe not found or not built by the last incremental link; performing full link
+  Maze Game.vcxproj -> C:\Users\ГЕРО\Desktop\dynamic programming\Maze Game\x64\Debug\Maze Game.exe

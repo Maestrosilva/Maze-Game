@@ -1,0 +1,95 @@
+Username: Admin1
+Password: 1
+LevelReached: 6
+Level1Id: 0
+Level2Id: 0
+Level3Id: 0
+Level4Id: 0
+Level5Id: 0
+TotalCoins: 100
+Discovered 'move': YES
+Discovered '#': YES
+Discovered '@': YES
+Discovered '%': YES
+Discovered '% work': YES
+Discovered '&': YES
+Discovered 'X': YES
+Discovered 'C': YES
+StaysOnPortal: NO
+------------------------
+Username: Admin2
+Password: 1
+LevelReached: 6
+Level1Id: 0
+Level2Id: 0
+Level3Id: 0
+Level4Id: 0
+Level5Id: 0
+TotalCoins: 69
+Discovered 'move': YES
+Discovered '#': YES
+Discovered '@': YES
+Discovered '%': YES
+Discovered '% work': YES
+Discovered '&': YES
+Discovered 'X': YES
+Discovered 'C': YES
+StaysOnPortal: NO
+------------------------
+Username: Admin3
+Password: 1
+LevelReached: 6
+Level1Id: 0
+Level2Id: 0
+Level3Id: 0
+Level4Id: 0
+Level5Id: 0
+TotalCoins: 42
+Discovered 'move': YES
+Discovered '#': YES
+Discovered '@': YES
+Discovered '%': YES
+Discovered '% work': YES
+Discovered '&': YES
+Discovered 'X': YES
+Discovered 'C': YES
+StaysOnPortal: NO
+------------------------
+Username: Admin4
+Password: 1
+LevelReached: 6
+Level1Id: 0
+Level2Id: 0
+Level3Id: 0
+Level4Id: 0
+Level5Id: 0
+TotalCoins: 24
+Discovered 'move': YES
+Discovered '#': YES
+Discovered '@': YES
+Discovered '%': YES
+Discovered '% work': YES
+Discovered '&': YES
+Discovered 'X': YES
+Discovered 'C': YES
+StaysOnPortal: NO
+------------------------
+Username: Admin5
+Password: 1
+LevelReached: 6
+Level1Id: 0
+Level2Id: 0
+Level3Id: 0
+Level4Id: 0
+Level5Id: 0
+TotalCoins: 1
+Discovered 'move': YES
+Discovered '#': YES
+Discovered '@': YES
+Discovered '%': YES
+Discovered '% work': YES
+Discovered '&': YES
+Discovered 'X': YES
+Discovered 'C': YES
+StaysOnPortal: NO
+------------------------

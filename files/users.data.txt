@@ -74,44 +74,6 @@ Discovered 'X': YES
 Discovered 'C': YES
 StaysOnPortal: NO
 ------------------------
-Username: gero
-Password: 1
-LevelReached: 3
-Level1Id: 8691
-Level2Id: 22018
-Level3Id: 20855
-Level4Id: 0
-Level5Id: 0
-TotalCoins: 80
-Discovered 'move': YES
-Discovered '#': YES
-Discovered '@': YES
-Discovered '%': YES
-Discovered '% work': YES
-Discovered '&': NO
-Discovered 'X': YES
-Discovered 'C': YES
-StaysOnPortal: NO
-------------------------
-Username: Admin6
-Password: 1
-LevelReached: 6
-Level1Id: 0
-Level2Id: 0
-Level3Id: 0
-Level4Id: 0
-Level5Id: 0
-TotalCoins: 79
-Discovered 'move': YES
-Discovered '#': YES
-Discovered '@': YES
-Discovered '%': YES
-Discovered '% work': YES
-Discovered '&': YES
-Discovered 'X': YES
-Discovered 'C': YES
-StaysOnPortal: NO
-------------------------
 Username: Admin5
 Password: 1
 LevelReached: 6
